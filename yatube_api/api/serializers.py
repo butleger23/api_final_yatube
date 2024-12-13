@@ -1,7 +1,6 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from django.contrib.auth import get_user_model
-
 
 from posts.models import Comment, Post, Group, Follow
 
@@ -48,6 +47,7 @@ class FollowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Choose a different person to follow: cannot follow yourself'
             )
+        return value
 
     class Meta:
         fields = ('user', 'following')
@@ -56,6 +56,6 @@ class FollowSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=['user', 'following'],
-                message='borpa'
+                message='Cannot follow the same person twice'
             )
         ]
