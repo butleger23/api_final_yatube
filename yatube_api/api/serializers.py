@@ -12,9 +12,6 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username', read_only=True
     )
-    group = serializers.PrimaryKeyRelatedField(
-        required=False, queryset=Group.objects.all()
-    )
 
     class Meta:
         fields = ('id', 'text', 'image', 'group', 'author', 'pub_date')
@@ -25,16 +22,16 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    post = serializers.PrimaryKeyRelatedField(read_only=True, required=False)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'author', 'text', 'created', 'post')
         model = Comment
+        read_only_fields = ('post',)
 
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'title', 'slug', 'description')
         model = Group
 
 
@@ -49,13 +46,6 @@ class FollowSerializer(serializers.ModelSerializer):
         slug_field='username',
     )
 
-    def validate_following(self, value):
-        if User.objects.get(username=value) == self.context['request'].user:
-            raise serializers.ValidationError(
-                'Choose a different person to follow: cannot follow yourself'
-            )
-        return value
-
     class Meta:
         fields = ('user', 'following')
         model = Follow
@@ -66,3 +56,10 @@ class FollowSerializer(serializers.ModelSerializer):
                 message='Cannot follow the same person twice',
             )
         ]
+
+    def validate_following(self, following):
+        if following == self.context['request'].user:
+            raise serializers.ValidationError(
+                'Choose a different person to follow: cannot follow yourself'
+            )
+        return following
