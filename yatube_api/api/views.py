@@ -60,5 +60,7 @@ class FollowViewSet(
         return self.request.user.following.all()
 
     def perform_create(self, serializer):
-        following = get_object_or_404(User, username=self.request.data.get('following'))
+        following = get_object_or_404(
+            User, username=self.request.data.get('following')
+        )
         serializer.save(user=self.request.user, following=following)
